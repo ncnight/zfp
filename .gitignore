@@ -1,3 +1,7 @@
+# CLion files
+*.idea
+**/cmake-build-debug/*
+
 *.a
 *.o
 bin
