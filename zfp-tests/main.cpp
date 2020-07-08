@@ -4,8 +4,9 @@
 
 #include "zfp.h"
 
+#define PRECISION 16
+
 int main() {
-    std::cout << "Hello, World!" << std::endl;
 
     int nx = 32, ny = 32, nz = 3;
     double test_array[nx][ny][nz]; // color varies the fastest
@@ -17,9 +18,10 @@ int main() {
                 double x = 2.0 * i / nx;
                 double y = 3.0 * j / ny;
                 test_array[j][i][z] = exp(-(x * x + y * y + z * z));
-                std::cout << std::setprecision(16) << test_array[j][i][z] << std::endl;
+                std::cout << std::setprecision(16) << test_array[j][i][z] << " ";
             }
         }
+        std::cout << std::endl;
     }
 
     printf("\n===============================\n");
@@ -33,9 +35,9 @@ int main() {
 
     //set zfp mode
     uint target_precision = 7, actual_precision;
-    actual_precision = zfp_stream_set_precision(zfp, 7);
+    actual_precision = zfp_stream_set_precision(zfp, PRECISION);
 
-    std::cout << "Actual Precision: " << actual_precision << std::endl;
+    std::cout << "Requested Precision: " << PRECISION << std::endl << "Actual Precision: " << actual_precision << std::endl;
 
     //get min ~safe~ buffer size
     size_t bufsize = zfp_stream_maximum_size(zfp, compressed_field);
@@ -73,9 +75,10 @@ int main() {
     for (int j = 0; j < ny; j++) {
         for (int i = 0; i < nx; i++) {
             for (int z = 0; z < nz; z++) {
-                std::cout << std::setprecision(16) << decompressed_array[j][i][z] << std::endl;
+                std::cout << std::setprecision(16) << decompressed_array[j][i][z] << " ";
             }
         }
+        std::cout << std::endl;
     }
 
 

@@ -123,9 +123,13 @@ _t2(decode_block, Int, DIMS)(bitstream* stream, int minbits, int maxbits, int ma
 {
   int bits;
   cache_align_(UInt ublock[BLOCK_SIZE]);
+  uint total = 3 * 4;
+  for (int r = total; r < BLOCK_SIZE; r++){
+      ublock[r] = 0;
+  }
   /* decode integer coefficients */
   if (BLOCK_SIZE <= 64)
-    bits = _t1(decode_ints, UInt)(stream, maxbits, maxprec, ublock, BLOCK_SIZE);
+    bits = _t1(decode_ints, UInt)(stream, maxbits, maxprec, ublock, 3*4);
   else
     bits = _t1(decode_many_ints, UInt)(stream, maxbits, maxprec, ublock, BLOCK_SIZE);
   /* read at least minbits bits */
@@ -136,6 +140,6 @@ _t2(decode_block, Int, DIMS)(bitstream* stream, int minbits, int maxbits, int ma
   /* reorder unsigned coefficients and convert to signed integer */
   _t1(inv_order, Int)(ublock, iblock, PERM, BLOCK_SIZE);
   /* perform decorrelating transform */
-//  _t2(inv_xform, Int, DIMS)(iblock);
+  _t2(inv_xform, Int, DIMS)(iblock); //TODO Comment me out!!
   return bits;
 }

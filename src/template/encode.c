@@ -1,4 +1,5 @@
 #include <limits.h>
+#include <stdio.h>
 
 static void _t2(fwd_xform, Int, DIMS)(Int* p);
 
@@ -147,7 +148,7 @@ _t2(encode_block, Int, DIMS)(bitstream* stream, int minbits, int maxbits, int ma
   _t1(fwd_order, Int)(ublock, iblock, PERM, BLOCK_SIZE);
   /* encode integer coefficients */
   if (BLOCK_SIZE <= 64)
-    bits = _t1(encode_ints, UInt)(stream, maxbits, maxprec, ublock, BLOCK_SIZE);
+    bits = _t1(encode_ints, UInt)(stream, maxbits, maxprec, ublock, 3 * 4);
   else
     bits = _t1(encode_many_ints, UInt)(stream, maxbits, maxprec, ublock, BLOCK_SIZE);
   /* write at least minbits bits by padding with zeros */
