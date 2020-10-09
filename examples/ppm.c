@@ -210,6 +210,15 @@ chroma_upsample(int32* block)
 #endif
 }
 
+void emit_integer(int32 integer) {
+  // unsigned char* p = &integer;
+  // uint i;
+  // for (i = 0; i < sizeof(int32); i++) {
+  //   printf("%02X", (unsigned char)p[i]);
+  // }
+  fwrite(&integer, sizeof(integer), 1, stdout);
+}
+
 int main(int argc, char* argv[])
 {
   double rate = 0;
@@ -218,6 +227,7 @@ int main(int argc, char* argv[])
   uint k;
   char line[0x100];
   uchar* image;
+  int32* coefficients;
   zfp_field* field;
   zfp_stream* zfp[3];
   bitstream* stream;
@@ -356,18 +366,28 @@ int main(int argc, char* argv[])
         zfp_decode_block_int32_2(zfp[k], ycocg[k]);
 #endif
       /* reconstruct Co and Cg chroma bands */
-      for (k = 1; k < 3; k++)
-        chroma_upsample(ycocg[k]);
+      // No need to upsample if we're using coefficients
+      // fprintf(stderr, "before upsample\n");
+      // for (k = 1; k < 3; k++)
+      //    chroma_upsample(ycocg[k]);
+      // fprintf(stderr, "after upsample\n");
       /* perform color space transform */
-      ycocg2rgb(rgb, ycocg);
+      // ycocg2rgb(rgb, ycocg); No need to transform to RGB
       /* demote to 8-bit integers */
-      for (k = 0; k < 3; k++)
-        zfp_demote_int32_to_uint8(block[k], rgb[k], 2);
+      // Don't demote to 8 bit since coefficients are 32 bit ints
+      // for (k = 0; k < 3; k++)
+      //   zfp_demote_int32_to_uint8(block[k], rgb[k], 2);
       /* store R, G, and B blocks */
       for (k = 0; k < 3; k++)
         for (j = 0; j < 4; j++)
           for (i = 0; i < 4; i++)
-            image[k + 3 * (x + i + nx * (y + j))] = block[k][i + 4 * j];
+            emit_integer(ycocg[k][i + 4 * j]);
+            // if (ycocg[k][i + 4 * j] != 0) {
+            //   nonzero += 1;
+            // }
+            // fprintf(stderr, "Before coeff set.\n");
+            // coefficients[k * sizeof(int32) + 3 * (x + i + nx * (y + j))] = ycocg[k][i + 4 * j];
+            // fprintf(stderr, "After coeff set.\n");
     }
 
   /* clean up */
@@ -377,14 +397,29 @@ int main(int argc, char* argv[])
   free(buffer);
 
   /* output reconstructed image */
-  printf("P6\n");
-  printf("%u %u\n", nx, ny);
-  printf("255\n");
-  if (fwrite(image, sizeof(*image), 3 * nx * ny, stdout) != 3 * nx * ny) {
-    fprintf(stderr, "error writing image\n");
-    return EXIT_FAILURE;
-  }
+  // Don't want to output normally
+  // printf("P6\n");
+  // printf("%u %u\n", nx, ny);
+  // printf("255\n");
+  // if (fwrite(image, sizeof(*image), 3 * nx * ny, stdout) != 3 * nx * ny) {
+  //   fprintf(stderr, "error writing image\n");
+  //   return EXIT_FAILURE;
+  // // }
+  // printf("3 %u %u\n", nx, ny)
+  // uint i, j, k; // x, y, color
+
+  // for (k=0; k < 3; k++) {
+
+  // }
+
+// if (fwrite(coefficients, sizeof(*coefficients), 3 * nx * ny, stdout) != 3 * nx * ny) {
+//   fprintf(stderr, "Error writing image\n");
+//   return EXIT_FAILURE;
+// }
+
+
   free(image);
+  // free(coefficients);
 
   return 0;
 }
